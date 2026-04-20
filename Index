@@ -226,13 +226,54 @@
 
     <!-- КАК КУПИТЬ -->
     <div class="card">
-        <h2>🛒 Как присоединиться?</h2>
-        <p>1️⃣ Выберите тариф выше.<br>2️⃣ Нажмите на кнопку оплаты (пока демо-ссылка).<br>3️⃣ После оплаты мы добавим вас в закрытый чат и пришлём расписание.</p>
-        <div style="text-align: center;">
-            <a href="#" class="btn" style="background: #9b4213;">💳 Оплатить участие (демо-ссылка)</a>
-        </div>
-        <p style="margin-top: 16px; font-size: 14px; text-align: center;">💰 Оплата картой, СБП — всё защищено. После оплаты вы получите доступ к записям и расписанию живых эфиров по понедельникам.</p>
+    <!-- БЛОК ОПЛАТЫ С ЮKassa -->
+<div class="card" id="payment">
+    <h2>🛒 Выберите тариф и оплатите</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin: 24px 0;">
+        <button class="btn pay-btn" data-amount="999" data-description="Разовое участие + неделя в клубе">💳 999 ₽ — Разовое</button>
+        <button class="btn pay-btn" data-amount="3333" data-description="1 месяц Кали Клуба (4 практики + чат)">💳 3 333 ₽ — 1 месяц</button>
+        <button class="btn pay-btn" data-amount="5555" data-description="2 месяца Кали Клуба (8 практик + чат)">💳 5 555 ₽ — 2 месяца</button>
+        <button class="btn pay-btn" data-amount="22222" data-description="Годовое членство в Кали Клубе">💳 22 222 ₽ — Годовой</button>
     </div>
+    <div id="payment-status" style="text-align: center; font-size: 14px; color: #555;"></div>
+</div>
+
+<script>
+    // Функция для вызова оплаты через ваш бэкенд (Cloudflare Worker)
+    async function createPayment(amount, description) {
+        const statusDiv = document.getElementById('payment-status');
+        statusDiv.innerText = '⏳ Перенаправление на оплату...';
+        
+        try {
+            // 👇 ЗДЕСЬ УКАЖИТЕ ВАШ РЕАЛЬНЫЙ URL БЭКЕНДА
+            const response = await fetch('https://your-worker-name.workers.dev/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, description })
+            });
+            
+            const data = await response.json();
+            if (data.confirmation_url) {
+                window.location.href = data.confirmation_url;
+            } else {
+                statusDiv.innerText = '❌ Ошибка при создании платежа. Попробуйте позже.';
+                console.error(data);
+            }
+        } catch (error) {
+            statusDiv.innerText = '❌ Ошибка соединения. Проверьте интернет.';
+            console.error(error);
+        }
+    }
+    
+    // Навешиваем обработчики на кнопки
+    document.querySelectorAll('.pay-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const amount = parseInt(btn.dataset.amount);
+            const description = btn.dataset.description;
+            createPayment(amount, description);
+        });
+    });
+</script>
 
     <footer>
         © Кали Клуб — утренняя энергия и телесные практики.<br>
